@@ -4,6 +4,7 @@ import { useStore } from './store/useStore';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PackTracker from './pages/PackTracker';
+import PackBrowser from './pages/PackBrowser';
 import Auth from './pages/Auth';
 
 const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000;
@@ -65,6 +66,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/packs" element={<PackTracker />} />
+        <Route path="/browse" element={<PackBrowser />} />
       </Routes>
     </Layout>
   );

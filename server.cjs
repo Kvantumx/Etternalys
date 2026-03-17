@@ -77,6 +77,21 @@ app.get('/api/leaderboard/at/:rank', async (req, res) => {
   }
 });
 
+// Pack listing (with search/sort/pagination)
+app.get('/api/packs', async (req, res) => {
+  try {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(req.query)) {
+      if (value !== undefined && value !== '') params.set(key, String(value));
+    }
+    const r = await axios.get(`${EO_API}/packs?${params}`, { headers: HEADERS, timeout: 10000 });
+    res.json(r.data);
+  } catch (e) {
+    console.error('Packs fetch error:', e.message);
+    res.status(e.response?.status || 500).json({ error: e.message });
+  }
+});
+
 // Pack info
 app.get('/api/pack/:id', async (req, res) => {
   try {
