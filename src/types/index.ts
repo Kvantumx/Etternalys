@@ -57,6 +57,7 @@ export interface TrackedPack {
   name: string;
   songs: PackSong[];
   packOverall: number; // overall MSD from the API
+  image: string | null;
   addedAt: number;
   lastFetched: number;
 }

@@ -101,6 +101,7 @@ export const api = {
       name: String(packData.name || packData.packname || `Pack ${packId}`),
       songs,
       packOverall: parseFloat(String(packData.overall || packData.average || 0)) || 0,
+      image: String(packData.banner_path || '') || null,
       addedAt: Date.now(),
       lastFetched: Date.now(),
     };

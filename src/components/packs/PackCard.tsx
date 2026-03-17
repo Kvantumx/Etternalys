@@ -119,9 +119,23 @@ export default function PackCard({ pack }: PackCardProps) {
           : 'linear-gradient(90deg, #EF4444, #F87171)';
 
   return (
-    <div className="card flex flex-col gap-0 overflow-hidden animate-slide-up p-0">
+    <div className="card flex flex-col gap-0 overflow-hidden animate-slide-up p-0 relative">
+      {/* Cover image background */}
+      {pack.image && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${pack.image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(18px) brightness(0.18)',
+            transform: 'scale(1.1)',
+          }}
+        />
+      )}
+      <div className="relative z-10 flex flex-col gap-0">
       {/* Header */}
-      <div className="p-4 border-b border-gray-800">
+      <div className="p-4 border-b border-gray-800/60">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-bold text-base truncate" title={pack.name}>
@@ -268,6 +282,7 @@ export default function PackCard({ pack }: PackCardProps) {
           No song data available for this pack
         </div>
       )}
+      </div>
     </div>
   );
 }

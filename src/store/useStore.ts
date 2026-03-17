@@ -118,6 +118,7 @@ export const useStore = create<AppState>()((set, get) => ({
       name: p.pack_name,
       songs: p.songs_data ?? [],
       packOverall: Number(p.pack_overall),
+      image: p.pack_image ?? null,
       addedAt: p.added_at,
       lastFetched: p.last_fetched,
     }));
@@ -225,6 +226,7 @@ export const useStore = create<AppState>()((set, get) => ({
       await supabase.from('user_packs').update({
         pack_name: pack.name,
         pack_overall: pack.packOverall,
+        pack_image: pack.image,
         songs_data: pack.songs,
         last_fetched: pack.lastFetched,
       }).eq('user_id', user.id).eq('pack_id', packId);
@@ -244,6 +246,7 @@ export const useStore = create<AppState>()((set, get) => ({
           pack_id: packId,
           pack_name: pack.name,
           pack_overall: pack.packOverall,
+          pack_image: pack.image,
           songs_data: pack.songs,
           added_at: pack.addedAt,
           last_fetched: pack.lastFetched,
