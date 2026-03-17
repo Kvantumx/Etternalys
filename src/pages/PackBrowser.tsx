@@ -280,7 +280,7 @@ export default function PackBrowser() {
     setSortOpen(false);
   };
 
-  // Normal fetch (no tier filter)
+  // Normal fetch (no tier filter) — keyCount and tags are client-side only (EO API ignores them)
   useEffect(() => {
     if (tierFilter) return;
     let cancelled = false;
@@ -290,8 +290,6 @@ export default function PackBrowser() {
         const apiSort = order === 'desc' ? `-${sort}` : sort;
         const params = new URLSearchParams({ page: String(page), sort: apiSort });
         if (query) params.set('search', query);
-        if (keyCount) params.set('keycount', keyCount);
-        selectedTags.forEach(t => params.append('tags[]', t));
 
         const { data: resp } = await axios.get(`${BASE}/packs?${params}`);
         if (!cancelled) {
@@ -310,7 +308,7 @@ export default function PackBrowser() {
     };
     fetchPacks();
     return () => { cancelled = true; };
-  }, [query, sort, order, keyCount, selectedTags, page, tierFilter]);
+  }, [query, sort, order, page, tierFilter]);
 
   // Tier filter: fetch ALL matching packs across all pages sorted by -overall
   useEffect(() => {
@@ -340,8 +338,6 @@ export default function PackBrowser() {
           batch.map(p => {
             const params = new URLSearchParams({ page: String(p), sort: '-overall' });
             if (query) params.set('search', query);
-            if (keyCount) params.set('keycount', keyCount);
-            selectedTags.forEach(t => params.append('tags[]', t));
             return axios.get(`${BASE}/packs?${params}`)
               .then(r => ({ packs: parsePacks(r.data.data || []), meta: r.data.meta }))
               .catch(() => ({ packs: [] as PackData[], meta: null }));
@@ -355,9 +351,12 @@ export default function PackBrowser() {
         for (const { packs: pagePacks, meta } of results) {
           if (meta?.last_page) totalPages = meta.last_page;
 
-          const inRange = pagePacks.filter(p =>
-            p.overall > 0 && p.overall >= range.min && p.overall <= range.max
-          );
+          const inRange = pagePacks.filter(p => {
+            if (!(p.overall > 0 && p.overall >= range.min && p.overall <= range.max)) return false;
+            if (keyCount && !p.tags.includes(keyCount)) return false;
+            if (selectedTags.length > 0 && !selectedTags.some(t => p.tags.includes(t))) return false;
+            return true;
+          });
           allMatches.push(...inRange);
 
           // DESC: if the page's minimum overall is below rangeMin, we've gone past the division
@@ -386,6 +385,13 @@ export default function PackBrowser() {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     setPage(1);
   };
+
+  // Client-side filter for normal browse mode (EO API ignores keycount/tags params)
+  const filteredPacks = packs.filter(p => {
+    if (keyCount && !p.tags.includes(keyCount)) return false;
+    if (selectedTags.length > 0 && !selectedTags.some(t => p.tags.includes(t))) return false;
+    return true;
+  });
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sort';
   const lastPage = meta?.last_page ?? 1;
@@ -579,12 +585,12 @@ export default function PackBrowser() {
               </div>
             ))}
           </div>
-        ) : packs.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">No packs found.</div>
+        ) : filteredPacks.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">No packs found{keyCount || selectedTags.length > 0 ? ' matching these filters on this page' : ''}.</div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {packs.map(pack => <BrowsePackCard key={pack.id} pack={pack} />)}
+              {filteredPacks.map(pack => <BrowsePackCard key={pack.id} pack={pack} />)}
             </div>
             {lastPage > 1 && <Pagination page={page} lastPage={lastPage} loading={loading} setPage={setPage} />}
           </>
